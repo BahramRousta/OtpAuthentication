@@ -7,16 +7,16 @@ class OtpRequestSerializer(serializers.Serializer):
     """
         get user phone number for create an otp
     """
-    input_data = serializers.CharField(allow_null=False, required=True)
+    otp_receiver = serializers.CharField(allow_null=False, required=True)
 
     def validate(self, data):
-        input_data = data["input_data"]
+        otp_receiver = data["otp_receiver"]
 
         phone_number_re = re.compile(r"09(1[0-9]|3[1-9]|2[1-9])-?[0-9]{3}-?[0-9]{4}")
         email_re = re.compile(
             r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
 
-        if re.fullmatch(phone_number_re, input_data) or re.fullmatch(email_re, input_data):
+        if re.fullmatch(phone_number_re, otp_receiver) or re.fullmatch(email_re, otp_receiver):
             return data
         raise serializers.ValidationError("Input must be contain email or phone number")
 
@@ -32,7 +32,7 @@ class VerifyOtpRequest(serializers.ModelSerializer):
 
     class Meta:
         model = Otp
-        fields = ['request_id', 'phone_number', 'code']
+        fields = ['request_id', 'otp_receiver', 'code']
         extra_kwargs = {'code': {'required': True}}
 
 

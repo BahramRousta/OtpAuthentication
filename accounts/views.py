@@ -20,11 +20,11 @@ User = get_user_model()
 
 
 def _handle_login(otp, request):
-    query = User.objects.filter(username=otp['phone_number'])
+    query = User.objects.filter(username=otp['otp_receiver'])
     if query.exists():
         user = query.first()
     else:
-        user = User.objects.create(username=otp['phone_number'])
+        user = User.objects.create(username=otp['otp_receiver'])
 
     refresh = RefreshToken.for_user(user)
     login(request, user=user)
@@ -42,9 +42,11 @@ class RegisterApiView(APIView):
         serializer = OtpRequestSerializer(data=request.query_params)
         if serializer.is_valid():
             data = serializer.validated_data
-            otp = Otp.objects.create(phone_number=data['input_data'])
+            otp = Otp.objects.create(otp_receiver=data['otp_receiver'])
+
             # call SMS web service to send otp code
             print(otp.code)
+
             return Response(data=RequestOtpResponseSerializer(otp).data)
         else:
             return Response(data=serializer.errors)
@@ -55,7 +57,7 @@ class RegisterApiView(APIView):
             data = serializer.validated_data
             if Otp.objects.is_valid(
                     data['request_id'],
-                    data['phone_number'],
+                    data['otp_receiver'],
                     data['code']
             ):
                 return Response(_handle_login(data, request))
