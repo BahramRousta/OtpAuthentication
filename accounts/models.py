@@ -15,7 +15,7 @@ class OtpManager(models.Manager):
     def is_valid(self, request_id, phone_number, code):
         current_time = timezone.now()
         otp = Otp.objects.filter(request_id=request_id,
-                                 phone_number=phone_number,
+                                 otp_receiver=phone_number,
                                  code=code,
                                  created__lt=current_time,
                                  created__gt=current_time - timedelta(seconds=120),
@@ -30,9 +30,8 @@ class OtpManager(models.Manager):
 
 
 class Otp(models.Model):
-    request_id = models.UUIDField(editable=False, default=uuid.uuid4())
-    phone_number = models.CharField(max_length=11, null=False, blank=False)
-    email = models.EmailField(null=True)
+    request_id = models.UUIDField(editable=False, default=uuid.uuid4(), auto_created=True)
+    otp_receiver = models.CharField(max_length=225, null=False, blank=False)
     code = models.CharField(max_length=6, default=generate_otp)
     is_active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -40,4 +39,4 @@ class Otp(models.Model):
     objects = OtpManager()
 
     def __str__(self):
-        return self.phone_number
+        return self.otp_receiver
