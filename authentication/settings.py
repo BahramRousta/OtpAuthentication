@@ -1,5 +1,8 @@
 from pathlib import Path
+import environ
 
+env = environ.Env()
+environ.Env.read_env()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -130,7 +133,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_RATES': {
         'otp_throttle': '1/minute',
-        'login_throttle': '3/minute',
+        'login_throttle': '1/minute',
         'logout': '1/minute',
         'delete_account': '1/minute',
     },
@@ -138,3 +141,10 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
+RECIPIENT_ADDRESS = env('RECIPIENT_ADDRESS')
