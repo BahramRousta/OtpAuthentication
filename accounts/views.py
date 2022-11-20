@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.core.mail import send_mail
+from django.conf import settings
 from .throttling import GetOTPRateThrottle, LoginRateThrottle
 from .models import Otp, CustomUser
 from accounts.serializers import (
@@ -46,6 +48,12 @@ class RegisterApiView(APIView):
 
             # call SMS web service to send otp code
             print(otp.code)
+            subject = "OTP Code"
+            message = f"Your OTP code is {otp.code}.\n" \
+                      f"To verify please enter this code."
+            email_from = settings.EMAIL_HOST_USER
+            recipient_list = [data['otp_receiver']]
+            send_mail(subject, message, email_from, recipient_list)
 
             return Response(data=RequestOtpResponseSerializer(otp).data)
         else:
