@@ -76,13 +76,13 @@ class RegisterApiView(APIView):
                                     data['code']):
                 return Response(_handle_login(data, request))
             else:
-                return Response(status=status.HTTP_401_UNAUTHORIZED)
+                return Response(status=status.HTTP_401_UNAUTHORIZED, data={"Message": "Be sure to use current information."})
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
 class LogOut(APIView):
-    permission_classes = ([IsAuthenticated])
+    # permission_classes = ([IsAuthenticated])
     throttle_scope = 'logout'
 
     def post(self, request):
