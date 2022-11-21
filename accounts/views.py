@@ -40,11 +40,22 @@ def _handle_login(otp, request):
 
 
 class RegisterApiView(APIView):
+    """
+        Registration with email or phone number by getting OTP code.
+    """
+
     permission_classes = ([AllowAny])
 
     # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     def get(self, request):
+        """
+        Get valid OTP receiver.
+        Otp_receiver must be email or phone number.
+
+        :param request: http request;
+        :return: OTP code: [int], request_id: [uuid];
+        """
         serializer = OtpRequestSerializer(data=request.query_params)
         if serializer.is_valid():
             data = serializer.validated_data
@@ -62,12 +73,18 @@ class RegisterApiView(APIView):
                 recipient_list = [data['otp_receiver']]
                 send_mail(subject, message, email_from, recipient_list)
                 print(otp.code)
-
             return Response(data=RequestOtpResponseSerializer(otp).data)
         else:
             return Response(data=serializer.errors)
 
     def post(self, request):
+        """
+        Receive request_id, otp_receiver and OTP code.
+        After validate information login user.
+
+        :param request: http request;
+        :return: Refresh and access token;
+        """
         serializer = VerifyOtpRequest(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
@@ -82,10 +99,18 @@ class RegisterApiView(APIView):
 
 
 class LogOut(APIView):
+    """
+
+    """
     # permission_classes = ([IsAuthenticated])
     throttle_scope = 'logout'
 
     def post(self, request):
+        """
+
+        :param request:
+        :return:
+        """
         tokens = OutstandingToken.objects.filter(user_id=request.user.id)
         for token in tokens:
             t, _ = BlacklistedToken.objects.get_or_create(token=token)
@@ -96,7 +121,12 @@ class DeleteAccount(APIView):
     permission_classes = ([IsAuthenticated])
     throttle_scope = 'delete_account'
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request):
+        """
+
+        :param request:
+        :return:
+        """
         user = self.request.user
         user.delete()
         return Response(status=status.HTTP_205_RESET_CONTENT)
