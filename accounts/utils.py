@@ -16,3 +16,7 @@ def generate_otp():
     code = totp.now()
     return code
 
+
+PHONE_PAtTERN_REGEX = r"09(1[0-9]|3[1-9]|2[1-9])-?[0-9]{3}-?[0-9]{4}"
+# MAIL_PATTERN_REGEX = r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])"
+MAIL_PATTERN_REGEX = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
