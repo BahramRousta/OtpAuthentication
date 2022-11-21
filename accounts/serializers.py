@@ -1,7 +1,7 @@
 import re
 from rest_framework import serializers
 from .models import Otp, CustomUser
-
+from .utils import PHONE_PAtTERN_REGEX, MAIL_PATTERN_REGEX
 
 class OtpRequestSerializer(serializers.Serializer):
     """
@@ -12,11 +12,10 @@ class OtpRequestSerializer(serializers.Serializer):
     def validate(self, data):
         otp_receiver = data["otp_receiver"]
 
-        phone_number_re = re.compile(r"09(1[0-9]|3[1-9]|2[1-9])-?[0-9]{3}-?[0-9]{4}")
-        email_re = re.compile(
-            r"([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\"([]!#-[^-~ \t]|(\\[\t -~]))+\")@([-!#-'*+/-9=?A-Z^-~]+(\.[-!#-'*+/-9=?A-Z^-~]+)*|\[[\t -Z^-~]*])")
+        # phone_number_re = re.compile(PHONE_PAtTERN_REGEX)
+        # email_re = re.compile(MAIL_PATTERN_REGEX)
 
-        if re.fullmatch(phone_number_re, otp_receiver) or re.fullmatch(email_re, otp_receiver):
+        if re.fullmatch(PHONE_PAtTERN_REGEX, otp_receiver) or re.fullmatch(MAIL_PATTERN_REGEX, otp_receiver):
             return data
         raise serializers.ValidationError("Input must be contain email or phone number")
 

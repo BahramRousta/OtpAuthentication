@@ -1,3 +1,4 @@
+import re
 from django.contrib.auth import get_user_model, login
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -17,7 +18,9 @@ from accounts.serializers import (
     SignUpByUsernameSerializer,
     LoginSerializer
 )
+from .utils import PHONE_PAtTERN_REGEX
 from django.db.models import Q
+
 User = get_user_model()
 
 
@@ -38,7 +41,8 @@ def _handle_login(otp, request):
 
 class RegisterApiView(APIView):
     permission_classes = ([AllowAny])
-    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+
+    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     def get(self, request):
         serializer = OtpRequestSerializer(data=request.query_params)
@@ -46,14 +50,18 @@ class RegisterApiView(APIView):
             data = serializer.validated_data
             otp = Otp.objects.create(otp_receiver=data['otp_receiver'])
 
-            # call SMS web service to send otp code
-            print(otp.code)
-            subject = "OTP Code"
-            message = f"Your OTP code is {otp.code}.\n" \
-                      f"To verify please enter this code."
-            email_from = settings.EMAIL_HOST_USER
-            recipient_list = [data['otp_receiver']]
-            send_mail(subject, message, email_from, recipient_list)
+            if re.fullmatch(PHONE_PAtTERN_REGEX, otp.otp_receiver):
+                # call SMS web service to send otp code
+                print(otp.code)
+            else:
+                # Send OTP via mail server
+                subject = "OTP Code"
+                message = f"Your OTP code is {otp.code}.\n" \
+                          f"To verify please use this code."
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [data['otp_receiver']]
+                send_mail(subject, message, email_from, recipient_list)
+                print(otp.code)
 
             return Response(data=RequestOtpResponseSerializer(otp).data)
         else:
@@ -63,11 +71,9 @@ class RegisterApiView(APIView):
         serializer = VerifyOtpRequest(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
-            if Otp.objects.is_valid(
-                    data['request_id'],
-                    data['otp_receiver'],
-                    data['code']
-            ):
+            if Otp.objects.is_valid(data['request_id'],
+                                    data['otp_receiver'],
+                                    data['code']):
                 return Response(_handle_login(data, request))
             else:
                 return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -92,9 +98,6 @@ class DeleteAccount(APIView):
 
     def delete(self, request, *args, **kwargs):
         user = self.request.user
-        transition_list = Transition.objects.filter(owner_id=user.id)
-        # delete user all transition
-        transition_list.delete()
         user.delete()
         return Response(status=status.HTTP_205_RESET_CONTENT)
 
@@ -131,8 +134,8 @@ class LogIn(APIView):
             data = serializer.validated_data
 
             user = CustomUser.objects.filter(Q(username=data["username"]) |
-                                              Q(phone_number=data["username"]) |
-                                              Q(email=data["username"])).first()
+                                             Q(phone_number=data["username"]) |
+                                             Q(email=data["username"])).first()
             # print(user)
 
             if user and user.check_password(data["password"]):
