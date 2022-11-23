@@ -41,17 +41,17 @@ def _handle_login(otp, request):
 
 class RegisterApiView(APIView):
     """
-        Registration with email or phone number by getting OTP code.
+        Registration with email or mobile number by getting OTP code.
     """
 
     permission_classes = ([AllowAny])
 
-    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     def get(self, request):
         """
-        Get valid OTP receiver.
-        Otp_receiver must be email or phone number.
+        Get a valid OTP receiver.
+        Otp_receiver must be an email or mobile number.
 
         :param request: http request;
         :return: OTP code: [int], request_id: [uuid];
@@ -79,10 +79,10 @@ class RegisterApiView(APIView):
 
     def post(self, request):
         """
-        Receive request_id, otp_receiver and OTP code.
-        After validate information login user.
+        Receives request_id, otp receiver, and an OTP code.
+        After validating the input information, the user is logged in.
 
-        :param request: http request;
+        :param request: [http request];
         :return: Refresh and access token;
         """
         serializer = VerifyOtpRequest(data=request.data)
@@ -93,7 +93,8 @@ class RegisterApiView(APIView):
                                     data['code']):
                 return Response(_handle_login(data, request))
             else:
-                return Response(status=status.HTTP_401_UNAUTHORIZED, data={"Message": "Be sure to use current information."})
+                return Response(status=status.HTTP_401_UNAUTHORIZED, data={"Message": "Be sure to use current "
+                                                                                      "information."})
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
@@ -107,10 +108,12 @@ class LogOut(APIView):
 
     def post(self, request):
         """
+        Receives a valid token and sets that into the blacklist to log out the user.
 
-        :param request:
-        :return:
+        :param request: [http request]
+        :return: None
         """
+
         tokens = OutstandingToken.objects.filter(user_id=request.user.id)
         for token in tokens:
             t, _ = BlacklistedToken.objects.get_or_create(token=token)
@@ -118,14 +121,18 @@ class LogOut(APIView):
 
 
 class DeleteAccount(APIView):
+    """
+    Removes account and user information from all models.
+    """
+
     permission_classes = ([IsAuthenticated])
     throttle_scope = 'delete_account'
 
     def delete(self, request):
         """
 
-        :param request:
-        :return:
+        :param request: [http request]
+        :return: None
         """
         user = self.request.user
         user.delete()
@@ -133,8 +140,17 @@ class DeleteAccount(APIView):
 
 
 class SignUp(APIView):
+    """
+    Sign up with a username and password.
+    """
 
     def post(self, request):
+        """
+        Receives a unique username and password then create an account and login after that.
+        :param request: [http request]
+        :return: refresh and access tokens.
+        """
+
         serializer = SignUpByUsernameSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
@@ -157,8 +173,16 @@ class SignUp(APIView):
 
 
 class LogIn(APIView):
-
+    """
+    Users can log in by username, email or mobile number.
+    Also can send email and phone number instead username and login with them.
+    """
     def post(self, request):
+        """
+        Get username or email or mobile number.
+        :param request: [http request]
+        :return: refresh and access tokens.
+        """
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             data = serializer.validated_data
