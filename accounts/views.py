@@ -19,6 +19,7 @@ from accounts.serializers import (
     LoginSerializer
 )
 from .utils import PHONE_PAtTERN_REGEX
+# from .sms import send_sms
 from django.db.models import Q
 
 User = get_user_model()
@@ -64,6 +65,7 @@ class RegisterApiView(APIView):
             if re.fullmatch(PHONE_PAtTERN_REGEX, otp.otp_receiver):
                 # call SMS web service to send otp code
                 print(otp.code)
+                # send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
             else:
                 # Send OTP via mail server
                 subject = "OTP Code"
