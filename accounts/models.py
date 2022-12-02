@@ -32,7 +32,7 @@ class OtpManager(models.Manager):
 class Otp(models.Model):
     request_id = models.UUIDField(max_length=36, default=uuid.uuid4)
     otp_receiver = models.CharField(max_length=225, null=False, blank=False)
-    code = models.CharField(max_length=6, default=generate_otp)
+    code = models.IntegerField(default=generate_otp)
     is_active = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now_add=True)
 

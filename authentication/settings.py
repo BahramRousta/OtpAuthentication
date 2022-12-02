@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
 
+    # Swagger doc
+    'drf_yasg',
+
     # New apps
     'accounts.apps.AccountsConfig',
     'rest_framework',
@@ -145,6 +148,7 @@ REST_FRAMEWORK = {
         'logout': '1/minute',
         'delete_account': '1/minute',
     },
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10
 }
@@ -176,3 +180,12 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 RECIPIENT_ADDRESS = env('RECIPIENT_ADDRESS')
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+'name': 'Authorization'
+        }
+    },
+}

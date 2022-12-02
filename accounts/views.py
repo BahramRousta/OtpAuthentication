@@ -10,7 +10,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .throttling import GetOTPRateThrottle, LoginRateThrottle
 from .models import Otp, CustomUser
-from django.contrib.auth.backends import ModelBackend
+from django.db.models import Q
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from accounts.serializers import (
     OtpRequestSerializer,
     RequestOtpResponseSerializer,
@@ -21,7 +23,6 @@ from accounts.serializers import (
 )
 from .utils import PHONE_PAtTERN_REGEX
 from .sms import send_sms
-from django.db.models import Q
 
 User = get_user_model()
 
@@ -43,20 +44,21 @@ def _handle_login(otp, request):
 
 class RegisterApiView(APIView):
     """
-        Registration with email or mobile number by getting OTP code.
+    Registration with email or mobile number by getting OTP code.
     """
 
     permission_classes = ([AllowAny])
 
-    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
+    @swagger_auto_schema(manual_parameters=[openapi.Parameter('otp_receiver',
+                                                              in_=openapi.IN_QUERY,
+                                                              type=openapi.TYPE_STRING)])
     def get(self, request):
         """
         Get a valid OTP receiver.
         Otp_receiver must be an email or mobile number.
-
-        :param request: http request;
-        :return: OTP code: [int], request_id: [uuid];
+        Return request_id and send otp code to otp_receiver.
         """
         serializer = OtpRequestSerializer(data=request.query_params)
         if serializer.is_valid():
@@ -76,17 +78,17 @@ class RegisterApiView(APIView):
                 recipient_list = [data['otp_receiver']]
                 send_mail(subject, message, email_from, recipient_list)
                 print(otp.code)
-            return Response(data=RequestOtpResponseSerializer(otp).data)
+            return Response(status=status.HTTP_200_OK, data=RequestOtpResponseSerializer(otp).data)
         else:
             return Response(data=serializer.errors)
 
+    @swagger_auto_schema(request_body=VerifyOtpRequest,
+                         responses={'200': 'logged in successfully.'})
     def post(self, request):
         """
         Receives request_id, otp receiver, and an OTP code.
         After validating the input information, the user is logged in.
-
-        :param request: [http request];
-        :return: Refresh and access token;
+        Return Refresh and access token.
         """
         serializer = VerifyOtpRequest(data=request.data)
         if serializer.is_valid():
@@ -102,56 +104,16 @@ class RegisterApiView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
 
 
-class LogOut(APIView):
-    """
-
-    """
-    # permission_classes = ([IsAuthenticated])
-    throttle_scope = 'logout'
-
-    def post(self, request):
-        """
-        Receives a valid token and sets that into the blacklist to log out the user.
-
-        :param request: [http request]
-        :return: None
-        """
-
-        tokens = OutstandingToken.objects.filter(user_id=request.user.id)
-        for token in tokens:
-            t, _ = BlacklistedToken.objects.get_or_create(token=token)
-        return Response(status=status.HTTP_205_RESET_CONTENT)
-
-
-class DeleteAccount(APIView):
-    """
-    Removes account and user information from all models.
-    """
-
-    permission_classes = ([IsAuthenticated])
-    throttle_scope = 'delete_account'
-
-    def delete(self, request):
-        """
-
-        :param request: [http request]
-        :return: None
-        """
-        user = self.request.user
-        user.delete()
-        return Response(status=status.HTTP_205_RESET_CONTENT)
-
-
 class SignUp(APIView):
     """
     Sign up with a username and password.
     """
 
+    @swagger_auto_schema(request_body=SignUpByUsernameSerializer)
     def post(self, request):
         """
         Receives a unique username and password then create an account and login after that.
-        :param request: [http request]
-        :return: refresh and access tokens.
+        Return refresh and access tokens.
         """
 
         serializer = SignUpByUsernameSerializer(data=request.data)
@@ -178,13 +140,14 @@ class SignUp(APIView):
 class LogIn(APIView):
     """
     Users can log in by username, email or mobile number.
-    Also can send email and phone number instead username and login with them.
+    Also, can send email and phone number instead username and login with them.
     """
+
+    @swagger_auto_schema(request_body=LoginSerializer)
     def post(self, request):
         """
         Get username or email or mobile number.
-        :param request: [http request]
-        :return: refresh and access tokens.
+        Return refresh and access tokens.
         """
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -208,3 +171,41 @@ class LogIn(APIView):
                 return Response(status=status.HTTP_403_FORBIDDEN, data={"Message": "The information is invalid."})
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST, data=serializer.errors)
+
+
+class LogOut(APIView):
+    """
+    Logged out user.
+    """
+    permission_classes = ([IsAuthenticated])
+    # throttle_scope = 'logout'
+
+    def post(self, request):
+        """
+        Receives a valid token and sets that into the blacklist to log out the user.
+        """
+        print(request.user)
+        tokens = OutstandingToken.objects.filter(user_id=request.user.id)
+        for token in tokens:
+            t, _ = BlacklistedToken.objects.get_or_create(token=token)
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+
+
+class DeleteAccount(APIView):
+    """
+    Removes account and user information from all models.
+    """
+
+    permission_classes = ([IsAuthenticated])
+    # throttle_scope = 'delete_account'
+
+    def delete(self, request):
+        """
+
+        :param request: [http request]
+        :return: None
+        """
+        user = self.request.user
+        user.delete()
+        return Response(status=status.HTTP_205_RESET_CONTENT)
+

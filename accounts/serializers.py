@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import Otp, CustomUser
 from .utils import PHONE_PAtTERN_REGEX, MAIL_PATTERN_REGEX
 
+
 class OtpRequestSerializer(serializers.Serializer):
     """
         get user phone number for create an otp
@@ -11,9 +12,6 @@ class OtpRequestSerializer(serializers.Serializer):
 
     def validate(self, data):
         otp_receiver = data["otp_receiver"]
-
-        # phone_number_re = re.compile(PHONE_PAtTERN_REGEX)
-        # email_re = re.compile(MAIL_PATTERN_REGEX)
 
         if re.fullmatch(PHONE_PAtTERN_REGEX, otp_receiver) or re.fullmatch(MAIL_PATTERN_REGEX, otp_receiver):
             return data
@@ -55,6 +53,7 @@ class SignUpByUsernameSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
+
     # A username can also contain the user's phone number and email
     username = serializers.CharField(required=True)
     password = serializers.CharField(
