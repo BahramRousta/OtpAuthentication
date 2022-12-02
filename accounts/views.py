@@ -1,9 +1,11 @@
 import re
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.core.mail import send_mail
@@ -177,18 +179,39 @@ class LogOut(APIView):
     """
     Logged out user.
     """
-    permission_classes = ([IsAuthenticated])
-    throttle_scope = 'logout'
+    permission_classes = [IsAuthenticated]
+    # throttle_scope = 'logout'
 
     def post(self, request):
         """
-        Receives a valid token and sets that into the blacklist to log out the user.
+        Receives a valid refresh token and sets that into the blacklist to log out the user.
         """
-        print(request.user)
-        tokens = OutstandingToken.objects.filter(user_id=request.user.id)
-        for token in tokens:
-            t, _ = BlacklistedToken.objects.get_or_create(token=token)
-        return Response(status=status.HTTP_205_RESET_CONTENT)
+        try:
+            refresh_token = request.data["refresh_token"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            logout(request)
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except TokenError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={'Bad token': 'Token is expired or invalid.'})
+
+
+class LogoutAllView(APIView):
+    """
+    Logged-out user from all device.
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def post(self, request):
+        try:
+            tokens = OutstandingToken.objects.filter(user_id=request.user.id)
+            for token in tokens:
+                t, _ = BlacklistedToken.objects.get_or_create(token=token)
+            return Response(status=status.HTTP_205_RESET_CONTENT)
+        except TokenError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST,
+                            data={'Bad token': 'Token is expired or invalid.'})
 
 
 class DeleteAccount(APIView):
@@ -208,4 +231,3 @@ class DeleteAccount(APIView):
         user = self.request.user
         user.delete()
         return Response(status=status.HTTP_205_RESET_CONTENT)
-
