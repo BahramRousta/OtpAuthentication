@@ -4,6 +4,8 @@ certifi==2022.9.24
 cffi==1.15.1
 charset-normalizer==2.1.1
 colorama==0.4.6
+coreapi==2.3.3
+coreschema==0.0.4
 cryptography==38.0.3
 defusedxml==0.7.1
 Deprecated==1.2.13
@@ -18,7 +20,10 @@ ecdsa==0.18.0
 exceptiongroup==1.0.4
 idna==3.4
 iniconfig==1.1.1
+itypes==1.2.0
+Jinja2==3.1.2
 jwcrypto==1.4.2
+MarkupSafe==2.1.1
 oauthlib==3.2.2
 packaging==21.3
 pluggy==1.0.0
