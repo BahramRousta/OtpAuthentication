@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from .throttling import GetOTPRateThrottle, LoginRateThrottle
 from .models import Otp, CustomUser
+from django.contrib.auth.backends import ModelBackend
 from accounts.serializers import (
     OtpRequestSerializer,
     RequestOtpResponseSerializer,
@@ -19,7 +20,7 @@ from accounts.serializers import (
     LoginSerializer
 )
 from .utils import PHONE_PAtTERN_REGEX
-# from .sms import send_sms
+from .sms import send_sms
 from django.db.models import Q
 
 User = get_user_model()
@@ -33,7 +34,7 @@ def _handle_login(otp, request):
         user = User.objects.create(username=otp['otp_receiver'])
 
     refresh = RefreshToken.for_user(user)
-    login(request, user=user)
+    login(request, user=user, backend='django.contrib.auth.backends.ModelBackend')
     return ObtainTokenSerializer({
         'refresh_token': str(refresh),
         'access_token': str(refresh.access_token)
@@ -65,7 +66,7 @@ class RegisterApiView(APIView):
             if re.fullmatch(PHONE_PAtTERN_REGEX, otp.otp_receiver):
                 # call SMS web service to send otp code
                 print(otp.code)
-                # send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
+                send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
             else:
                 # Send OTP via mail server
                 subject = "OTP Code"
@@ -162,7 +163,7 @@ class SignUp(APIView):
             user.save()
 
             refresh = RefreshToken.for_user(user)
-            login(request, user=user)
+            login(request, user=user, backend='django.contrib.auth.backends.ModelBackend')
 
             token = ObtainTokenSerializer({
                 'refresh_token': str(refresh),
@@ -195,7 +196,7 @@ class LogIn(APIView):
             # print(user)
 
             if user and user.check_password(data["password"]):
-                login(request, user)
+                login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
                 refresh = RefreshToken.for_user(user)
                 token = ObtainTokenSerializer({
