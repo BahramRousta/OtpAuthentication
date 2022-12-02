@@ -49,7 +49,7 @@ class RegisterApiView(APIView):
 
     permission_classes = ([AllowAny])
 
-    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     @swagger_auto_schema(manual_parameters=[openapi.Parameter('otp_receiver',
                                                               in_=openapi.IN_QUERY,
@@ -178,7 +178,7 @@ class LogOut(APIView):
     Logged out user.
     """
     permission_classes = ([IsAuthenticated])
-    # throttle_scope = 'logout'
+    throttle_scope = 'logout'
 
     def post(self, request):
         """
@@ -197,7 +197,7 @@ class DeleteAccount(APIView):
     """
 
     permission_classes = ([IsAuthenticated])
-    # throttle_scope = 'delete_account'
+    throttle_scope = 'delete_account'
 
     def delete(self, request):
         """
