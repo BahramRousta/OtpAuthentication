@@ -40,15 +40,14 @@ def test_otp_login(db, client, otp):
     assert "refresh_token" in data
 
 
-def test_otp_login_fail(db, client, otp):
+def test_otp_login_fail(db, client, otp, otp_response_fail):
+    """
+    Test fail when request_id is incorrect.
+    :param db: a django test database.
+    :param client: Apiclient
+    :param otp: object
+    :return: Assert 404.
+    """
 
-    payload = dict(
-        otp_receiver="6180b2ec-4280-4cd3-98d4-0859829ea194",
-        request_id=f"{otp.request_id}",
-        code=f"{otp.code}"
-    )
-
-    response = client.post("/api-accounts/register/", payload)
-
-    assert response.status_code == 401
+    assert otp_response_fail.status_code == 401
 
