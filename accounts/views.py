@@ -51,7 +51,7 @@ class RegisterApiView(APIView):
 
     permission_classes = ([AllowAny])
 
-    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     @swagger_auto_schema(manual_parameters=[openapi.Parameter('otp_receiver',
                                                               in_=openapi.IN_QUERY,
@@ -70,7 +70,7 @@ class RegisterApiView(APIView):
             if re.fullmatch(PHONE_PAtTERN_REGEX, otp.otp_receiver):
                 # call SMS web service to send otp code
                 print(otp.code)
-                send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
+                # send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
             else:
                 # Send OTP via mail server
                 subject = "OTP Code"
