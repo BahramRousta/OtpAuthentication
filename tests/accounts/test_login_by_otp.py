@@ -50,4 +50,3 @@ def test_otp_login_fail(db, client, otp, otp_response_fail):
     """
 
     assert otp_response_fail.status_code == 401
-
