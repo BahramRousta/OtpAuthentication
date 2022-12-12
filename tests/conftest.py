@@ -26,7 +26,7 @@ def otp_response_fail(otp, client):
     :param client:
     :return: apiclient response
     """
-    counter = 0
+
     payload = [
         dict(otp_receiver=f"bahramrousta@gmail.com", request_id=f"{otp.request_id}", code=f"{otp.code}"),
         dict(otp_receiver=f"{otp.otp_receiver}", request_id="6180b2ec-4280-4cd3-98d4-0859829ea194", code=f"{otp.code}"),
@@ -35,8 +35,6 @@ def otp_response_fail(otp, client):
 
     response = None
     for status in payload:
-        counter += 1
         response = client.post("/api-accounts/register/", status)
-
     return response
 

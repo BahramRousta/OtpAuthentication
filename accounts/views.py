@@ -180,7 +180,7 @@ class LogOut(APIView):
     Logged out user.
     """
     permission_classes = [IsAuthenticated]
-    # throttle_scope = 'logout'
+    throttle_scope = 'logout'
 
     def post(self, request):
         """
