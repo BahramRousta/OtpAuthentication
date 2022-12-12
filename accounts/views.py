@@ -51,7 +51,7 @@ class RegisterApiView(APIView):
 
     permission_classes = ([AllowAny])
 
-    # throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
+    throttle_classes = [GetOTPRateThrottle, LoginRateThrottle]
 
     @swagger_auto_schema(manual_parameters=[openapi.Parameter('otp_receiver',
                                                               in_=openapi.IN_QUERY,
