@@ -38,7 +38,7 @@ AUTH_PROVIDERS = {'facebook': 'facebook', 'google': 'google',
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True, db_index=True)
-    email = models.EmailField(max_length=255, unique=True, db_index=True)
+    email = models.EmailField(max_length=255, unique=True, db_index=True, null=True, blank=True)
     phone_number = models.CharField(max_length=11)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -49,8 +49,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         max_length=255, blank=False,
         null=False, default=AUTH_PROVIDERS.get('email'))
 
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    # REQUIRED_FIELDS = ['username']
 
     objects = UserManager()
 

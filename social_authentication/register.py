@@ -9,24 +9,22 @@ def generate_username(name):
 
     username = "".join(name.split(' ')).lower()
     if not CustomUser.objects.filter(username=username).exists():
-        print(username)
         return username
     else:
         random_username = username + str(random.randint(0, 1000))
-        print(f"random username {random_username}")
         return generate_username(random_username)
 
 
 def register_social_user(provider, user_id, email, name):
     filtered_user_by_email = CustomUser.objects.filter(email=email)
-
+    print(filtered_user_by_email)
     if filtered_user_by_email.exists():
 
         if provider == filtered_user_by_email[0].auth_provider:
-
+            print(filtered_user_by_email[0].email)
             registered_user = authenticate(
-                email=email, password=settings.SOCIAL_SECRET)
-
+                username=filtered_user_by_email[0].username, password=settings.SOCIAL_SECRET)
+            print(registered_user)
             return {
                 'username': registered_user.username,
                 'email': registered_user.email,
@@ -48,7 +46,7 @@ def register_social_user(provider, user_id, email, name):
         user.save()
 
         new_user = authenticate(
-            email=email, password=settings.SOCIAL_SECRET)
+            username=user.username, password=settings.SOCIAL_SECRET)
 
         return {
             'email': new_user.email,
