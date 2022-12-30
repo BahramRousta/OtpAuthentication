@@ -1,6 +1,5 @@
 from django.contrib.auth import authenticate
 from accounts.models import CustomUser
-import os
 import random
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
@@ -10,16 +9,16 @@ def generate_username(name):
 
     username = "".join(name.split(' ')).lower()
     if not CustomUser.objects.filter(username=username).exists():
+        print(username)
         return username
     else:
         random_username = username + str(random.randint(0, 1000))
+        print(f"random username {random_username}")
         return generate_username(random_username)
 
 
 def register_social_user(provider, user_id, email, name):
     filtered_user_by_email = CustomUser.objects.filter(email=email)
-
-    print(f"filtered_user_by_email: {filtered_user_by_email}")
 
     if filtered_user_by_email.exists():
 
@@ -27,12 +26,11 @@ def register_social_user(provider, user_id, email, name):
 
             registered_user = authenticate(
                 email=email, password=settings.SOCIAL_SECRET)
-            print(registered_user)
+
             return {
                 'username': registered_user.username,
                 'email': registered_user.email,
                 'tokens': registered_user.tokens()}
-            # return (print("hi again"))
 
         else:
             raise AuthenticationFailed(
@@ -40,8 +38,10 @@ def register_social_user(provider, user_id, email, name):
 
     else:
         user = {
-            'username': generate_username(name), 'email': email,
+            'username': generate_username(name),
+            'email': email,
             'password': settings.SOCIAL_SECRET}
+
         user = CustomUser.objects.create_user(**user)
         user.is_verified = True
         user.auth_provider = provider
@@ -49,6 +49,7 @@ def register_social_user(provider, user_id, email, name):
 
         new_user = authenticate(
             email=email, password=settings.SOCIAL_SECRET)
+
         return {
             'email': new_user.email,
             'username': new_user.username,
