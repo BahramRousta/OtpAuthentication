@@ -2,6 +2,7 @@ import re
 from rest_framework import serializers
 from .models import Otp, CustomUser
 from .utils import PHONE_PAtTERN_REGEX, MAIL_PATTERN_REGEX
+from authentication.settings import SIMPLE_JWT
 
 
 class OtpRequestSerializer(serializers.Serializer):
@@ -35,7 +36,9 @@ class VerifyOtpRequest(serializers.ModelSerializer):
 
 class ObtainTokenSerializer(serializers.Serializer):
     access_token = serializers.CharField(max_length=255)
+    access_token_expiration = serializers.CharField(default=f"{SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].seconds} seconds")
     refresh_token = serializers.CharField(max_length=255)
+    refresh_token_expiration = serializers.CharField(default=f"{SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].seconds} seconds")
 
 
 class SignUpByUsernameSerializer(serializers.ModelSerializer):
