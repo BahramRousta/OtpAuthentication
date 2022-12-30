@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from . import google
 from .register import register_social_user
-import os
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
 
@@ -11,7 +10,7 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
 
     def validate_auth_token(self, auth_token):
         user_data = google.Google.validate(auth_token)
-        # print(user_data)
+
         try:
             user_data['sub']
         except:
@@ -20,14 +19,12 @@ class GoogleSocialAuthSerializer(serializers.Serializer):
             )
 
         if user_data['aud'] != settings.GOOGLE_CLIENT_ID:
-            raise AuthenticationFailed('oops, who are you?')
+            raise AuthenticationFailed("The information sent by the sender is wrong")
 
         user_id = user_data['sub']
         email = user_data['email']
         name = user_data['name']
         provider = 'google'
-
-        print(user_id, email, name, provider)
 
         return register_social_user(
             provider=provider, user_id=user_id, email=email, name=name)
