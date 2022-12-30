@@ -16,12 +16,13 @@ schema_view = get_schema_view(
     permission_classes=[permissions.AllowAny],
 )
 
+
 urlpatterns = [
     path('auth/', include('drf_social_oauth2.urls', namespace='drf')),
-    # path('', include('social_django.urls', namespace='social')),
     path('admin/doc/', include('django.contrib.admindocs.urls')),
     path('admin/', admin.site.urls),
     path('api-accounts/', include('accounts.urls')),
+    path('api-social-authentication/', include('social_authentication.urls')),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
