@@ -39,11 +39,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-
-    # Oauth apps for social register and log in
-    'oauth2_provider',
-    'social_django',
-    'drf_social_oauth2'
+    'corsheaders',
+    'social_authentication.apps.SocialAuthenticationConfig'
 ]
 
 MIDDLEWARE = [
@@ -157,8 +154,8 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = env('SOCIAL_AUTH_GOOGLE_OAUTH2_KEY')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = env('SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET')
+GOOGLE_CLIENT_ID = env('GOOGLE_CLIENT_ID')
+SOCIAL_SECRET = env('SOCIAL_SECRET')
 
 # Define SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE to get extra permissions from Google.
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
