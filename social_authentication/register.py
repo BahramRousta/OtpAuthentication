@@ -1,8 +1,10 @@
 from django.contrib.auth import authenticate
+from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import CustomUser
 import random
 from rest_framework.exceptions import AuthenticationFailed
 from django.conf import settings
+from accounts.serializers import ObtainTokenSerializer
 
 
 def generate_username(name):
@@ -17,18 +19,19 @@ def generate_username(name):
 
 def register_social_user(provider, user_id, email, name):
     filtered_user_by_email = CustomUser.objects.filter(email=email)
-    print(filtered_user_by_email)
+
     if filtered_user_by_email.exists():
 
         if provider == filtered_user_by_email[0].auth_provider:
-            print(filtered_user_by_email[0].email)
+
             registered_user = authenticate(
                 username=filtered_user_by_email[0].username, password=settings.SOCIAL_SECRET)
-            print(registered_user)
-            return {
-                'username': registered_user.username,
-                'email': registered_user.email,
-                'tokens': registered_user.tokens()}
+
+            refresh = RefreshToken.for_user(registered_user)
+            return ObtainTokenSerializer({
+                'refresh_token': str(refresh),
+                'access_token': str(refresh.access_token)
+            }).data
 
         else:
             raise AuthenticationFailed(
@@ -48,8 +51,8 @@ def register_social_user(provider, user_id, email, name):
         new_user = authenticate(
             username=user.username, password=settings.SOCIAL_SECRET)
 
-        return {
-            'email': new_user.email,
-            'username': new_user.username,
-            'tokens': new_user.tokens()
-        }
+        refresh = RefreshToken.for_user(new_user)
+        return ObtainTokenSerializer({
+            'refresh_token': str(refresh),
+            'access_token': str(refresh.access_token)
+        }).data
