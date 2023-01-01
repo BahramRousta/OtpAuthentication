@@ -38,7 +38,7 @@ class ObtainTokenSerializer(serializers.Serializer):
     access_token = serializers.CharField(max_length=255)
     access_token_expiration = serializers.CharField(default=f"{SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].seconds} seconds")
     refresh_token = serializers.CharField(max_length=255)
-    refresh_token_expiration = serializers.CharField(default=f"{SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].seconds} seconds")
+    refresh_token_expiration = serializers.CharField(default=f"{SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()} seconds")
 
 
 class SignUpByUsernameSerializer(serializers.ModelSerializer):
