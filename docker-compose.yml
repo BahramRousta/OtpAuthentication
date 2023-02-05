@@ -1,19 +1,22 @@
-version: '3.9'
+version: "3.9"
 
 services:
-  web:
-    build: .
+  app:
+    build: 
+      context: .
     container_name: OTP-Authentication
-    command: sh -c "python3 manage.py makemigrations --noinput && \
+    command: >
+      sh -c "python3 manage.py makemigrations --noinput && \
                  python3 manage.py migrate --noinput && \
                  python3 manage.py collectstatic --noinput && \
-                 python3 manage.py createsuperuser --username superuser --email admin@localhost --noinput; \
+                 python3 manage.py createsuperuser --username superuser --noinput; \
                  python3 manage.py runserver 0.0.0.0:8000"
     ports:
       - 8000:8000
     volumes:
-      - ./web/volumes:/web
-  
+      - ./app:/app
+    depends_on:
+      - db
   db:
     image: postgres:11
     environment:
@@ -24,5 +27,3 @@ services:
       - pgdata:/var/lib/posgresql/data
 volumes:
   pgdata:
-
-

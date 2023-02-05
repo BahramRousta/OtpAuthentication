@@ -11,6 +11,6 @@ COPY ./web /web
 
 WORKDIR /web
 
-COPY ./requirements.txt /web/requirements.txt
+COPY ./requirements.txt requirements.txt
 
-RUN pip install -r /web/requirements.txt
+RUN pip install -r requirements.txt
