@@ -25,6 +25,8 @@ from accounts.serializers import (
 )
 from .utils import PHONE_PAtTERN_REGEX
 from .sms import send_sms
+from .tasks import send_register_mail
+
 
 User = get_user_model()
 
@@ -68,18 +70,21 @@ class RegisterApiView(APIView):
             otp = Otp.objects.create(otp_receiver=data['otp_receiver'])
 
             if re.fullmatch(PHONE_PAtTERN_REGEX, otp.otp_receiver):
-                # call SMS web service to send otp code
+
                 print(otp.code)
                 # send_sms(otp=otp.code, mobile_number=otp.otp_receiver)
             else:
-                # Send OTP via mail server
-                subject = "OTP Code"
-                message = f"Your OTP code is {otp.code}.\n" \
-                          f"To verify please use this code."
-                email_from = settings.EMAIL_HOST_USER
-                recipient_list = [data['otp_receiver']]
-                send_mail(subject, message, email_from, recipient_list)
+
+                # subject = "OTP Code"
+                # message = f"Your OTP code is {otp.code}.\n" \
+                #           f"To verify please use this code."
+                # email_from = settings.EMAIL_HOST_USER
+                # recipient_list = [data['otp_receiver']]
+                # send_mail(subject, message, email_from, recipient_list)
                 print(otp.code)
+
+                send_register_mail.delay(data, otp.code)
+                
             return Response(status=status.HTTP_200_OK, data=RequestOtpResponseSerializer(otp).data)
         else:
             return Response(data=serializer.errors)

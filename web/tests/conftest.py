@@ -5,7 +5,7 @@ from accounts.models import CustomUser, Otp
 
 @pytest.fixture
 def user():
-    return CustomUser.objects.create_user(username='username', password='user_password')
+    return CustomUser.objects.create_user(username='username', password='user_password', email='lyhxr@example.com')
 
 
 @pytest.fixture
@@ -38,3 +38,14 @@ def otp_response_fail(otp, client):
         response = client.post("/api-accounts/register/", status)
     return response
 
+
+import httpx
+from django.test import Client
+
+@pytest.fixture
+async def async_client():
+    """
+    Returns an async HTTP client for Django.
+    """
+    async with httpx.AsyncClient() as client:
+        yield client

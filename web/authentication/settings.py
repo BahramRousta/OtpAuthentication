@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admindocs',
 
+    # Celery
+    'django_celery_results',
+
     # Swagger doc
     'drf_yasg',
 
@@ -82,8 +85,12 @@ WSGI_APPLICATION = 'authentication.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'abc.1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -136,10 +143,10 @@ REST_FRAMEWORK = {
         'rest_framework.throttling.ScopedRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'otp_throttle': '1/minute',
-        'login_throttle': '1/minute',
-        'logout': '1/minute',
-        'delete_account': '1/minute',
+        'otp_throttle': '10/minute',
+        'login_throttle': '10/minute',
+        'logout': '10/minute',
+        'delete_account': '10/minute',
     },
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
@@ -190,3 +197,11 @@ SWAGGER_SETTINGS = {
         }
     },
 }
+
+
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+# CELERY_ACCEPT_CONTENT = {'application/json'}
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'Asia/Tehran'
+CELERY_RESULT_BACKEND = 'django-db'
